@@ -1,4 +1,4 @@
-import {Controller, Get, HttpException, HttpStatus, SetMetadata} from '@nestjs/common';
+import {Controller, Get, HttpException, HttpStatus, Param, Query, SetMetadata} from '@nestjs/common';
 import {AppService} from './app.service';
 import { RequireLogin, RequirePermissions } from './custom.decorator';
 
@@ -9,7 +9,13 @@ export class AppController {
   @Get()
   getHello(): string {
     throw new HttpException('en', HttpStatus.UNAUTHORIZED);
+  }
 
+
+  @Get('testGet')
+  testGet(@Query() params: any) {
+    console.log('get params', params)
+    throw new HttpException('垃圾请求', HttpStatus.BAD_GATEWAY)
   }
 
   @RequireLogin()

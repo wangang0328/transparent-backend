@@ -17,6 +17,7 @@ async function bootstrap() {
   app.useGlobalInterceptors(new InvokeRecordInterceptor());
   // 处理 HttpException 类型的数据
   app.useGlobalFilters(new CustomExceptionFilter);
+  app.enableCors()
 
   // 配置 swagger
   const config = new DocumentBuilder()

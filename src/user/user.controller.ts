@@ -16,6 +16,7 @@ import { RefreshTokenVo } from './vo/refresh-token.vo';
 import { UserDetailInfoVo } from './vo/user-info.vo';
 import { UserListDto } from './dto/user-list.dto';
 import { UserListVo } from './vo/user-list.vo';
+import { CustomHttpStatus } from 'src/utils/custom-http-status';
 
 @ApiTags('用户管理模块')
 @Controller('user')
@@ -132,7 +133,7 @@ export class UserController {
   // token的无感刷新
   @ApiOperation({ summary: '无感刷新' })
   @ApiQuery({
-    name: 'refreshToken',
+    name: 'token',
     description: '刷新的token',
     type: String,
     example: 'XXXXXXYYYYYYYZZZZZZZ'
@@ -146,10 +147,10 @@ export class UserController {
     status: HttpStatus.UNAUTHORIZED,
     description: 'token 已失效，请重新登录'
   })
-  @Get('refresh')
-  async refreshToken(@Query('refreshToken') refreshToken: string) {
+  @Get('refreshToken')
+  async refreshToken(@Query('token') refreshToken: string) {
     if (!refreshToken) {
-      throw new HttpException('缺少参数', HttpStatus.BAD_REQUEST);
+      throw new HttpException('缺少参数', CustomHttpStatus.NO_REFRESH_TOKEN);
     }
     try {
       const data = this.jwtService.verify<{ userId: string }>(refreshToken)
@@ -159,7 +160,7 @@ export class UserController {
         refreshToken: newRefreshToken
       }
     } catch (error) {
-      throw new UnauthorizedException("token 已失效，请重新登录")
+      throw new HttpException("token 已失效，请重新登录", CustomHttpStatus.REFRESH_TOKEN_EXPIRED)
     }
   }
 

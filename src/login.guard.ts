@@ -1,8 +1,9 @@
-import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException, Module } from '@nestjs/common';
+import { CanActivate, ExecutionContext, Inject, Injectable, UnauthorizedException, Module, HttpException, HttpStatus } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { Request } from 'express'
 import { Reflector } from '@nestjs/core';
 import { JwtService } from '@nestjs/jwt';
+import { CustomHttpStatus } from './utils/custom-http-status';
 
 interface JwtUser {
   userId: string
@@ -35,18 +36,21 @@ export class LoginGuard implements CanActivate {
     }
     const authorization = request.headers.authorization
     if (!authorization) {
-      throw new UnauthorizedException('用户未登录');
+      throw new HttpException('用户未登录', CustomHttpStatus.NO_ACCESS_TOKEN);
     }
 
     // 判断有效性
     try {
       const [, token] = authorization.split(' ')
+      if (!token) {
+        throw new HttpException('用户未登录', CustomHttpStatus.NO_ACCESS_TOKEN);
+      }
       const data = this.jwtService.verify<JwtUser>(token)
       request.user = {
         userId: data.userId
       }
     } catch (error) {
-      throw new UnauthorizedException('token 失效，请重新登录');
+      throw new HttpException('refresh token 过期', CustomHttpStatus.ACCESS_TOKEN_EXPIRED);
     }
 
     return true;
